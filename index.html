@@ -5,184 +5,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Run Tracker</title>
 
-<!-- Home-screen / standalone app behaviour -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Runs">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#FBFBF9">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f0f0f;
-    --surface: #181818;
-    --border: #2a2a2a;
-    --text: #e8e8e8;
-    --muted: #666;
-    --quality: #f97316;
-    --easy: #22c55e;
-    --long: #3b82f6;
-    --done-text: #3a3a3a;
+    --paper:   #FBFBF9;
+    --card:    #FFFFFF;
+    --rule:    #E7E7E2;
+    --ink:     #16160F;
+    --muted:   #8A8A80;
+    --faint:   #B8B8AE;
+
+    --quality: #C2410C;
+    --easy:    #15803D;
+    --long:    #1D4ED8;
+    --filler:  #DCDCD5;
   }
 
-  html { background: var(--bg); }
+  html { background: var(--paper); }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Archivo', -apple-system, sans-serif;
     min-height: 100vh;
-    padding: calc(24px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
+    padding: calc(20px + env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom));
     -webkit-font-smoothing: antialiased;
   }
 
-  header { max-width: 680px; margin: 0 auto 28px; }
+  .wrap { max-width: 620px; margin: 0 auto; }
 
   .race-label {
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
+    font-size: 10px;
+    letter-spacing: 0.14em;
     color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
-  h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 14px; }
+  h1 { font-size: 25px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; }
 
-  .countdown {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 10px;
-  }
-  .countdown strong { color: var(--text); font-weight: 500; }
+  .countdown { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .countdown strong { color: var(--ink); font-weight: 500; }
 
   .progress-bar-wrap {
-    margin-top: 16px;
-    background: var(--surface);
-    border-radius: 4px;
-    height: 4px;
-    overflow: hidden;
+    margin-top: 12px; background: var(--rule);
+    border-radius: 3px; height: 3px; overflow: hidden;
   }
-
   .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--quality), var(--long));
-    border-radius: 4px;
-    transition: width 0.4s ease;
-    width: 0%;
+    height: 100%; background: var(--ink); border-radius: 3px;
+    transition: width 0.35s ease; width: 0%;
   }
-
   .progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--muted);
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 6px; font-size: 11px; color: var(--muted);
     font-family: 'DM Mono', monospace;
   }
 
-  .legend {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    max-width: 680px;
-    margin: 0 auto 22px;
+  .sync {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
   }
+  .sync-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--faint); transition: background 0.2s;
+  }
+  .sync-dot.synced  { background: var(--easy); }
+  .sync-dot.saving  { background: var(--quality); }
+  .sync-dot.offline { background: var(--faint); }
+  .sync-dot.error   { background: #B91C1C; }
 
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-  #runList { max-width: 680px; margin: 0 auto; }
-
-  .run-row {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 14px;
+  .banner {
+    border: 1px solid var(--rule);
+    background: var(--card);
     border-radius: 8px;
-    margin-bottom: 3px;
-    cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
-    border: 1px solid transparent;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    min-height: 56px;
-  }
-
-  .run-row:active { background: var(--surface); }
-  @media (hover: hover) {
-    .run-row:hover { background: var(--surface); border-color: var(--border); }
-  }
-  .run-row:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
-
-  .run-row.done { opacity: 0.4; }
-  .run-row.done .run-name, .run-row.done .run-detail {
-    text-decoration: line-through;
-    color: var(--done-text);
-  }
-
-  .checkbox {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-  }
-  .run-row.done .checkbox { background: var(--border); border-color: var(--border); }
-  .checkmark { display: none; color: var(--bg); font-size: 11px; font-weight: 700; }
-  .run-row.done .checkmark { display: block; }
-
-  .type-pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .run-info { flex: 1; min-width: 0; }
-  .run-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-  .run-detail { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.4; }
-
-  .reset {
-    display: block;
-    max-width: 680px;
-    margin: 28px auto 0;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
+    padding: 11px 13px;
+    margin: 14px 0 0;
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.05em;
-    padding: 11px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    text-transform: uppercase;
-    width: 100%;
+    line-height: 1.6;
+    color: var(--muted);
   }
-  .reset:active { color: var(--text); border-color: var(--muted); }
+  .banner strong { color: var(--ink); font-weight: 500; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0 14px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  }
+  .legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+
+  .run-row {
+    display: flex; gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 15px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: border-color 0.15s, opacity 0.15s;
+  }
+  .run-row:active { border-color: var(--faint); }
+  @media (hover: hover) { .run-row:hover { border-color: var(--faint); } }
+  .run-row:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+
+  .run-row.done { opacity: 0.42; }
+  .run-row.done .run-name { text-decoration: line-through; }
+  .run-row.skipped { opacity: 0.42; border-style: dashed; }
+  .run-row.skipped .run-name { text-decoration: line-through; }
+
+  .checkbox {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--faint);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .run-row.done .checkbox { background: var(--ink); border-color: var(--ink); }
+  .run-row.skipped .checkbox { background: var(--filler); border-color: var(--filler); }
+  .mark { display: none; font-size: 11px; font-weight: 700; line-height: 1; }
+  .mark.tick { color: var(--card); }
+  .mark.dash { color: var(--muted); }
+  .run-row.done .mark.tick { display: block; }
+  .run-row.skipped .mark.dash { display: block; }
+
+  .run-body { flex: 1; min-width: 0; }
+
+  .eyebrow {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;
+  }
+  .eyebrow .kind { font-weight: 500; }
+  .eyebrow .total { color: var(--muted); }
+
+  .skip-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--faint); background: none;
+    border: 1px solid var(--rule); border-radius: 5px;
+    padding: 3px 7px; margin-left: 8px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  }
+  .skip-btn:active { color: var(--ink); border-color: var(--faint); }
+  .run-row.skipped .skip-btn { color: var(--ink); border-color: var(--faint); }
+  .skip-btn:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+
+  .run-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+
+  .breakdown {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; line-height: 1.7; color: var(--muted);
+  }
+  .breakdown .work { color: var(--ink); font-weight: 500; }
+
+  .reset {
+    display: block; width: 100%; margin-top: 22px;
+    background: none; border: 1px solid var(--rule);
+    color: var(--muted); font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    padding: 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase;
+  }
+  .reset:active { color: var(--ink); border-color: var(--faint); }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
+<div class="wrap">
 
 <header>
-  <div class="race-label">Wipro Bangalore Marathon · Sep 27 2026</div>
+  <div class="race-label">Wipro Bangalore Marathon · 27 Sep 2026</div>
   <h1>Run Tracker</h1>
-  <div class="subtitle">Sub-2:15 · 33 runs</div>
   <div class="countdown" id="countdown"></div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
   <div class="progress-label">
-    <span id="progressText">0 / 33 runs done</span>
-    <span id="progressPct">0%</span>
+    <span id="progressText">0 / 33 done</span>
+    <span class="sync"><span class="sync-dot" id="syncDot"></span><span id="syncText">—</span></span>
   </div>
+  <div id="bannerSlot"></div>
 </header>
 
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--quality)"></div> Quality / Tempo</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--quality)"></div> Quality</div>
   <div class="legend-item"><div class="legend-dot" style="background:var(--easy)"></div> Easy</div>
   <div class="legend-item"><div class="legend-dot" style="background:var(--long)"></div> Long</div>
 </div>
@@ -190,66 +209,188 @@
 <div id="runList"></div>
 <button class="reset" id="resetBtn">Reset all</button>
 
+</div>
+
 <script>
-const STORAGE_KEY = 'hm2026-runs-done';
+/* ══════════════════════════════════════════════════════════════
+   SUPABASE CONFIG — paste your two values here.
+   Both are safe to keep in a public repo: the anon key only has
+   the access your row-level security policy allows.
+   Leave them as-is and the app runs local-only (no sync).
+   ══════════════════════════════════════════════════════════════ */
+const SUPABASE_URL      = 'https://qexvmsweoxcqeymqljfi.supabase.co';   // https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = 'sb_publishable_U7fXJq7e346P3sMYnIMvGw_OPQRCEHZ';
+const ROW_ID            = 'hm2026';
+/* ════════════════════════════════════════════════════════════ */
+
+const LOCAL_KEY = 'hm2026-runs-done';
 const RACE_DATE = new Date('2026-09-27T05:30:00+05:30');
 
 const runs = [
-  { type:'quality', name:'Introductory Tempo', detail:'2 × 8 min tempo · ~5 km · 6:45–7:00/km' },
-  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00–8:30/km · fully conversational' },
-  { type:'long',    name:'Long Run',           detail:'8 km · 7:30–7:45/km · steady and controlled' },
+  { type:'quality', name:'Introductory Tempo', total:'34 min · ~5 km',
+    text:'10 min warm-up · <b>8 min @ 6:45–7:00</b> · 3 min jog · <b>8 min @ 6:45–7:00</b> · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'4 km', text:'4 km @ 8:00–8:30 · fully conversational throughout' },
+  { type:'long', name:'Long Run', total:'7 km', text:'7 km @ 7:30–7:45 · steady and controlled' },
 
-  { type:'quality', name:'Tempo Run',          detail:'2 × 10 min tempo · ~6 km · 6:45–7:00/km' },
-  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
-  { type:'long',    name:'Long Run',           detail:'9 km · 7:30–7:45/km' },
+  { type:'quality', name:'Tempo Run', total:'38 min · ~6 km',
+    text:'10 min warm-up · <b>10 min @ 6:45–7:00</b> · 3 min jog · <b>10 min @ 6:45–7:00</b> · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'5 km', text:'5 km @ 8:00–8:30' },
+  { type:'long', name:'Long Run', total:'9 km', text:'9 km @ 7:30–7:45' },
 
-  { type:'quality', name:'Tempo Run',          detail:'3 × 8 min tempo · ~6 km · 6:40–6:55/km' },
-  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
-  { type:'long',    name:'Long Run',           detail:'11 km · 7:30–7:45/km' },
+  { type:'quality', name:'Tempo Run', total:'43 min · ~6 km',
+    text:'10 min warm-up · <b>3 × 8 min @ 6:40–6:55</b> · 2 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'5 km', text:'5 km @ 8:00–8:30' },
+  { type:'long', name:'Long Run', total:'11 km', text:'11 km @ 7:30–7:45' },
 
-  { type:'quality', name:'Tempo Run',          detail:'2 × 8 min tempo · ~5 km · 6:45/km · step-back' },
-  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km · keep it very easy' },
-  { type:'long',    name:'Long Run',           detail:'12 km · 7:30–7:45/km' },
+  { type:'quality', name:'Tempo Run · step-back', total:'34 min · ~5 km',
+    text:'10 min warm-up · <b>2 × 8 min @ 6:45</b> · 3 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'4 km', text:'4 km @ 8:00+ · keep it genuinely very easy' },
+  { type:'long', name:'Long Run', total:'12 km', text:'12 km @ 7:30–7:45' },
 
-  { type:'quality', name:'Tempo Run',          detail:'3 × 10 min tempo · ~7 km · 6:35–6:50/km' },
-  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
-  { type:'long',    name:'Long Run',           detail:'13 km · 7:30–7:45/km' },
+  { type:'quality', name:'Tempo Run', total:'49 min · ~7 km',
+    text:'10 min warm-up · <b>3 × 10 min @ 6:35–6:50</b> · 2 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'5 km', text:'5 km @ 8:00–8:30' },
+  { type:'long', name:'Long Run', total:'13 km', text:'13 km @ 7:30–7:45' },
 
-  { type:'quality', name:'Tempo Run',          detail:'4 × 8 min tempo · ~8 km · 6:35–6:50/km' },
-  { type:'easy',    name:'Easy Run',           detail:'6 km · 8:00–8:30/km' },
-  { type:'long',    name:'Long Run',           detail:'15 km · 7:30–7:45/km' },
+  { type:'quality', name:'Tempo Run', total:'53 min · ~8 km',
+    text:'10 min warm-up · <b>4 × 8 min @ 6:35–6:50</b> · 2 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'6 km', text:'6 km @ 8:00–8:30' },
+  { type:'long', name:'Long Run', total:'15 km', text:'15 km @ 7:30–7:45' },
 
-  { type:'quality', name:'Tempo Run',          detail:'3 × 12 min tempo · ~8 km · 6:30–6:45/km' },
-  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00+/km · easy legs before big long run' },
-  { type:'long',    name:'Long Run ⭐',         detail:'17 km · 7:30–7:45/km · biggest pre-UK run' },
+  { type:'quality', name:'Tempo Run', total:'55 min · ~8 km',
+    text:'10 min warm-up · <b>3 × 12 min @ 6:30–6:45</b> · 2 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'5 km', text:'5 km @ 8:00+ · easy legs before the big long run' },
+  { type:'long', name:'Long Run ⭐', total:'17 km', text:'17 km @ 7:30–7:45 · biggest pre-UK run — do not skip' },
 
-  { type:'quality', name:'Tempo Run',          detail:'2 × 8 min tempo · ~5 km · keep it easy' },
-  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km' },
-  { type:'long',    name:'Long Run',           detail:'12 km · 7:30–7:45/km · step back before UK' },
+  { type:'quality', name:'Tempo Run · pre-UK taper', total:'34 min · ~5 km',
+    text:'10 min warm-up · <b>2 × 8 min, relaxed</b> · 3 min jog · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'4 km', text:'4 km @ 8:00+' },
+  { type:'long', name:'Long Run', total:'12 km', text:'12 km @ 7:30–7:45 · step back before you fly' },
 
-  { type:'quality', name:'Tempo Run',          detail:'3 × 10 min tempo · ~7 km · 6:30–6:45/km · post-UK rebuild' },
-  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
-  { type:'long',    name:'Long Run',           detail:'15 km · 7:20–7:35/km' },
+  { type:'quality', name:'Tempo Run · post-UK rebuild', total:'49 min · ~7 km',
+    text:'10 min warm-up · <b>3 × 10 min @ 6:30–6:45</b> · 2 min jog between · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'5 km', text:'5 km @ 8:00–8:30' },
+  { type:'long', name:'Long Run', total:'15 km', text:'15 km @ 7:20–7:35' },
 
-  { type:'quality', name:'Tempo Run',          detail:'2 × 12 min tempo · ~7 km · 6:25–6:40/km' },
-  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km · easy before peak long run' },
-  { type:'long',    name:'Long Run ⭐',         detail:'18 km · 7:20–7:35/km · longest training run' },
+  { type:'quality', name:'Tempo Run', total:'42 min · ~7 km',
+    text:'10 min warm-up · <b>12 min @ 6:25–6:40</b> · 3 min jog · <b>12 min @ 6:25–6:40</b> · 5 min cool-down' },
+  { type:'easy', name:'Easy Run', total:'4 km', text:'4 km @ 8:00+ · easy before the peak long run' },
+  { type:'long', name:'Long Run ⭐', total:'18 km', text:'18 km @ 7:20–7:35 · longest training run' },
 
-  { type:'quality', name:'Shakeout Tempo',     detail:'2 × 6 min · ~4 km · race pace 6:24/km · keep short' },
-  { type:'easy',    name:'Shakeout Run',       detail:'3 km · very easy · just stay loose' },
-  { type:'long',    name:'🏁 Race Day — Wipro HM', detail:'21.1 km · 6:24/km · sub-2:15' },
+  { type:'quality', name:'Shakeout Tempo · race week', total:'30 min · ~4 km',
+    text:'10 min warm-up · <b>2 × 6 min @ 6:24 race pace</b> · 3 min jog · 5 min cool-down · keep it short' },
+  { type:'easy', name:'Shakeout Run', total:'3 km', text:'3 km very easy · just stay loose' },
+  { type:'long', name:'🏁 Race Day — Wipro HM', total:'21.1 km', text:'21.1 km @ 6:24 · sub-2:15' },
 ];
 
 const typeColor = { quality:'var(--quality)', easy:'var(--easy)', long:'var(--long)' };
+const typeLabel = { quality:'Quality', easy:'Easy', long:'Long' };
 
-let done = [];
-try {
-  done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-} catch (e) { done = []; }
+const configured = SUPABASE_URL.indexOf('http') === 0 && SUPABASE_ANON_KEY.indexOf('PASTE') === -1;
 
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch (e) {}
+// ── State ─────────────────────────────────────────────────────
+// state[id] = 'done' | 'skipped'   (absent = not started)
+let state = {};
+let updatedAt = 0;
+
+function loadLocal() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null');
+    if (!raw) return;
+    if (Array.isArray(raw)) {                       // v1: array of done indices
+      raw.forEach(function(i) { state[i] = 'done'; });
+      updatedAt = Date.now();
+    } else if (raw.state) {                          // v3: { state, updatedAt }
+      state = raw.state; updatedAt = raw.updatedAt || 0;
+    } else {                                         // v2: bare { id: status }
+      state = raw; updatedAt = Date.now();
+    }
+  } catch (e) {}
 }
+
+function saveLocal() {
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ state: state, updatedAt: updatedAt })); } catch (e) {}
+}
+
+// ── Sync indicator ────────────────────────────────────────────
+function setSync(cls, label) {
+  document.getElementById('syncDot').className = 'sync-dot ' + cls;
+  document.getElementById('syncText').textContent = label;
+}
+
+// ── Supabase (plain REST — no SDK) ────────────────────────────
+function headers() {
+  return {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  };
+}
+
+async function pull() {
+  const url = SUPABASE_URL + '/rest/v1/run_progress?id=eq.' + ROW_ID + '&select=state,updated_at';
+  const res = await fetch(url, { headers: headers() });
+  if (!res.ok) throw new Error('pull ' + res.status);
+  const rows = await res.json();
+  if (!rows.length) return null;
+  return { state: rows[0].state || {}, updatedAt: new Date(rows[0].updated_at).getTime() };
+}
+
+async function push() {
+  const url = SUPABASE_URL + '/rest/v1/run_progress?id=eq.' + ROW_ID;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: Object.assign(headers(), { 'Prefer': 'return=minimal' }),
+    body: JSON.stringify({ state: state, updated_at: new Date(updatedAt).toISOString() })
+  });
+  if (!res.ok) throw new Error('push ' + res.status);
+}
+
+let pushTimer = null;
+function queuePush() {
+  if (!configured) return;
+  setSync('saving', 'Saving');
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(function() {
+    push()
+      .then(function() { setSync('synced', 'Synced'); })
+      .catch(function() { setSync('error', 'Save failed'); });
+  }, 600);
+}
+
+async function initSync() {
+  if (!configured) {
+    setSync('offline', 'Local only');
+    document.getElementById('bannerSlot').innerHTML =
+      '<div class="banner"><strong>Sync is off.</strong> Add your Supabase URL and anon key at the top of ' +
+      'index.html to sync across devices. Until then ticks are saved on this device only.</div>';
+    return;
+  }
+  setSync('saving', 'Syncing');
+  try {
+    const remote = await pull();
+    if (remote && remote.updatedAt > updatedAt) {
+      state = remote.state; updatedAt = remote.updatedAt;
+      saveLocal(); render();
+      setSync('synced', 'Synced');
+    } else if (Object.keys(state).length && (!remote || updatedAt > remote.updatedAt)) {
+      await push();
+      setSync('synced', 'Synced');
+    } else {
+      setSync('synced', 'Synced');
+    }
+  } catch (e) {
+    setSync('error', 'Offline');
+  }
+}
+
+// Re-pull when the app comes back to the foreground
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && configured) initSync();
+});
+
+// ── Rendering ─────────────────────────────────────────────────
+function countBy(v) { return Object.keys(state).filter(function(k) { return state[k] === v; }).length; }
 
 function renderCountdown() {
   const days = Math.ceil((RACE_DATE - new Date()) / 86400000);
@@ -261,41 +402,63 @@ function renderCountdown() {
 }
 
 function updateProgress() {
-  const total = runs.length, count = done.length;
-  const pct = Math.round((count / total) * 100);
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('progressText').textContent = count + ' / ' + total + ' runs done';
-  document.getElementById('progressPct').textContent = pct + '%';
+  const total = runs.length;
+  const d = countBy('done'), s = countBy('skipped');
+  document.getElementById('progressBar').style.width = Math.round(d / total * 100) + '%';
+  document.getElementById('progressText').textContent =
+    d + ' / ' + total + ' done' + (s ? '  ·  ' + s + ' skipped' : '');
 }
 
-function toggle(id) {
-  const idx = done.indexOf(id);
-  if (idx === -1) done.push(id); else done.splice(idx, 1);
+function setState(id, next) {
+  if (state[id] === next) delete state[id]; else state[id] = next;
+  updatedAt = Date.now();
   const row = document.getElementById('run-' + id);
-  row.classList.toggle('done', done.includes(id));
-  row.setAttribute('aria-checked', done.includes(id));
+  row.classList.toggle('done', state[id] === 'done');
+  row.classList.toggle('skipped', state[id] === 'skipped');
+  row.setAttribute('aria-checked', state[id] === 'done');
+  const btn = row.querySelector('.skip-btn');
+  if (btn) {
+    btn.textContent = state[id] === 'skipped' ? 'Skipped' : 'Skip';
+    btn.setAttribute('aria-pressed', state[id] === 'skipped');
+  }
   updateProgress();
-  save();
+  saveLocal();
+  queuePush();
 }
 
 function render() {
   let html = '';
   runs.forEach(function(run, i) {
-    const isDone = done.includes(i);
-    html += '<div class="run-row' + (isDone ? ' done' : '') + '" id="run-' + i + '" tabindex="0" role="checkbox" aria-checked="' + isDone + '" data-id="' + i + '">'
-      + '<div class="checkbox"><span class="checkmark">✓</span></div>'
-      + '<div class="type-pip" style="background:' + typeColor[run.type] + '"></div>'
-      + '<div class="run-info"><div class="run-name">' + run.name + '</div>'
-      + '<div class="run-detail">' + run.detail + '</div></div></div>';
+    const st = state[i];
+    const cls = st === 'done' ? ' done' : (st === 'skipped' ? ' skipped' : '');
+    html += '<div class="run-row' + cls + '" id="run-' + i + '" tabindex="0" role="checkbox" aria-checked="' + (st === 'done') + '" data-id="' + i + '">'
+      + '<div class="checkbox"><span class="mark tick">✓</span><span class="mark dash">–</span></div>'
+      + '<div class="run-body">'
+      +   '<div class="eyebrow">'
+      +     '<span class="kind" style="color:' + typeColor[run.type] + '">' + typeLabel[run.type] + '</span>'
+      +     '<span style="display:flex;align-items:center">'
+      +       '<span class="total">' + run.total + '</span>'
+      +       '<button class="skip-btn" data-skip="' + i + '" aria-pressed="' + (st === 'skipped') + '">'
+      +         (st === 'skipped' ? 'Skipped' : 'Skip') + '</button>'
+      +     '</span>'
+      +   '</div>'
+      +   '<div class="run-name">' + run.name + '</div>'
+      +   '<div class="breakdown">' + run.text.replace(/<b>/g, '<span class="work">').replace(/<\/b>/g, '</span>') + '</div>'
+      + '</div></div>';
   });
   document.getElementById('runList').innerHTML = html;
 
   document.querySelectorAll('.run-row').forEach(function(row) {
     const id = parseInt(row.dataset.id, 10);
-    row.addEventListener('click', function() { toggle(id); });
+    row.addEventListener('click', function() { setState(id, 'done'); });
     row.addEventListener('keydown', function(e) {
-      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(id); }
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setState(id, 'done'); }
     });
+  });
+
+  document.querySelectorAll('.skip-btn').forEach(function(btn) {
+    const id = parseInt(btn.dataset.skip, 10);
+    btn.addEventListener('click', function(e) { e.stopPropagation(); setState(id, 'skipped'); });
   });
 
   updateProgress();
@@ -303,13 +466,17 @@ function render() {
 }
 
 document.getElementById('resetBtn').addEventListener('click', function() {
-  if (!confirm('Reset all ' + done.length + ' completed runs?')) return;
-  done = [];
-  render();
-  save();
+  const n = Object.keys(state).length;
+  if (!n) return;
+  if (!confirm('Reset all ' + n + ' marked runs?')) return;
+  state = {}; updatedAt = Date.now();
+  render(); saveLocal(); queuePush();
 });
 
+// ── Boot: local first (instant), then reconcile with remote ───
+loadLocal();
 render();
+initSync();
 </script>
 </body>
 </html>
