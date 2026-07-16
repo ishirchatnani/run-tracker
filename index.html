@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Run Tracker</title>
+
+<!-- Home-screen / standalone app behaviour -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Runs">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f0f0f">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #666;
+    --quality: #f97316;
+    --easy: #22c55e;
+    --long: #3b82f6;
+    --done-text: #3a3a3a;
+  }
+
+  html { background: var(--bg); }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header { max-width: 680px; margin: 0 auto 28px; }
+
+  .race-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; }
+
+  .countdown {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .countdown strong { color: var(--text); font-weight: 500; }
+
+  .progress-bar-wrap {
+    margin-top: 16px;
+    background: var(--surface);
+    border-radius: 4px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--quality), var(--long));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: 680px;
+    margin: 0 auto 22px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  #runList { max-width: 680px; margin: 0 auto; }
+
+  .run-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 3px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    border: 1px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    min-height: 56px;
+  }
+
+  .run-row:active { background: var(--surface); }
+  @media (hover: hover) {
+    .run-row:hover { background: var(--surface); border-color: var(--border); }
+  }
+  .run-row:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+
+  .run-row.done { opacity: 0.4; }
+  .run-row.done .run-name, .run-row.done .run-detail {
+    text-decoration: line-through;
+    color: var(--done-text);
+  }
+
+  .checkbox {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .run-row.done .checkbox { background: var(--border); border-color: var(--border); }
+  .checkmark { display: none; color: var(--bg); font-size: 11px; font-weight: 700; }
+  .run-row.done .checkmark { display: block; }
+
+  .type-pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .run-info { flex: 1; min-width: 0; }
+  .run-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .run-detail { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.4; }
+
+  .reset {
+    display: block;
+    max-width: 680px;
+    margin: 28px auto 0;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 11px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    width: 100%;
+  }
+  .reset:active { color: var(--text); border-color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="race-label">Wipro Bangalore Marathon · Sep 27 2026</div>
+  <h1>Run Tracker</h1>
+  <div class="subtitle">Sub-2:15 · 33 runs</div>
+  <div class="countdown" id="countdown"></div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+  <div class="progress-label">
+    <span id="progressText">0 / 33 runs done</span>
+    <span id="progressPct">0%</span>
+  </div>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--quality)"></div> Quality / Tempo</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--easy)"></div> Easy</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--long)"></div> Long</div>
+</div>
+
+<div id="runList"></div>
+<button class="reset" id="resetBtn">Reset all</button>
+
+<script>
+const STORAGE_KEY = 'hm2026-runs-done';
+const RACE_DATE = new Date('2026-09-27T05:30:00+05:30');
+
+const runs = [
+  { type:'quality', name:'Introductory Tempo', detail:'2 × 8 min tempo · ~5 km · 6:45–7:00/km' },
+  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00–8:30/km · fully conversational' },
+  { type:'long',    name:'Long Run',           detail:'8 km · 7:30–7:45/km · steady and controlled' },
+
+  { type:'quality', name:'Tempo Run',          detail:'2 × 10 min tempo · ~6 km · 6:45–7:00/km' },
+  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
+  { type:'long',    name:'Long Run',           detail:'9 km · 7:30–7:45/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'3 × 8 min tempo · ~6 km · 6:40–6:55/km' },
+  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
+  { type:'long',    name:'Long Run',           detail:'11 km · 7:30–7:45/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'2 × 8 min tempo · ~5 km · 6:45/km · step-back' },
+  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km · keep it very easy' },
+  { type:'long',    name:'Long Run',           detail:'12 km · 7:30–7:45/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'3 × 10 min tempo · ~7 km · 6:35–6:50/km' },
+  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
+  { type:'long',    name:'Long Run',           detail:'13 km · 7:30–7:45/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'4 × 8 min tempo · ~8 km · 6:35–6:50/km' },
+  { type:'easy',    name:'Easy Run',           detail:'6 km · 8:00–8:30/km' },
+  { type:'long',    name:'Long Run',           detail:'15 km · 7:30–7:45/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'3 × 12 min tempo · ~8 km · 6:30–6:45/km' },
+  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00+/km · easy legs before big long run' },
+  { type:'long',    name:'Long Run ⭐',         detail:'17 km · 7:30–7:45/km · biggest pre-UK run' },
+
+  { type:'quality', name:'Tempo Run',          detail:'2 × 8 min tempo · ~5 km · keep it easy' },
+  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km' },
+  { type:'long',    name:'Long Run',           detail:'12 km · 7:30–7:45/km · step back before UK' },
+
+  { type:'quality', name:'Tempo Run',          detail:'3 × 10 min tempo · ~7 km · 6:30–6:45/km · post-UK rebuild' },
+  { type:'easy',    name:'Easy Run',           detail:'5 km · 8:00–8:30/km' },
+  { type:'long',    name:'Long Run',           detail:'15 km · 7:20–7:35/km' },
+
+  { type:'quality', name:'Tempo Run',          detail:'2 × 12 min tempo · ~7 km · 6:25–6:40/km' },
+  { type:'easy',    name:'Easy Run',           detail:'4 km · 8:00+/km · easy before peak long run' },
+  { type:'long',    name:'Long Run ⭐',         detail:'18 km · 7:20–7:35/km · longest training run' },
+
+  { type:'quality', name:'Shakeout Tempo',     detail:'2 × 6 min · ~4 km · race pace 6:24/km · keep short' },
+  { type:'easy',    name:'Shakeout Run',       detail:'3 km · very easy · just stay loose' },
+  { type:'long',    name:'🏁 Race Day — Wipro HM', detail:'21.1 km · 6:24/km · sub-2:15' },
+];
+
+const typeColor = { quality:'var(--quality)', easy:'var(--easy)', long:'var(--long)' };
+
+let done = [];
+try {
+  done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+} catch (e) { done = []; }
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch (e) {}
+}
+
+function renderCountdown() {
+  const days = Math.ceil((RACE_DATE - new Date()) / 86400000);
+  const el = document.getElementById('countdown');
+  if (days > 1) el.innerHTML = '<strong>' + days + '</strong> days to race day';
+  else if (days === 1) el.innerHTML = '<strong>Tomorrow.</strong>';
+  else if (days === 0) el.innerHTML = '<strong>Today. Go.</strong>';
+  else el.innerHTML = 'Race done.';
+}
+
+function updateProgress() {
+  const total = runs.length, count = done.length;
+  const pct = Math.round((count / total) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = count + ' / ' + total + ' runs done';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function toggle(id) {
+  const idx = done.indexOf(id);
+  if (idx === -1) done.push(id); else done.splice(idx, 1);
+  const row = document.getElementById('run-' + id);
+  row.classList.toggle('done', done.includes(id));
+  row.setAttribute('aria-checked', done.includes(id));
+  updateProgress();
+  save();
+}
+
+function render() {
+  let html = '';
+  runs.forEach(function(run, i) {
+    const isDone = done.includes(i);
+    html += '<div class="run-row' + (isDone ? ' done' : '') + '" id="run-' + i + '" tabindex="0" role="checkbox" aria-checked="' + isDone + '" data-id="' + i + '">'
+      + '<div class="checkbox"><span class="checkmark">✓</span></div>'
+      + '<div class="type-pip" style="background:' + typeColor[run.type] + '"></div>'
+      + '<div class="run-info"><div class="run-name">' + run.name + '</div>'
+      + '<div class="run-detail">' + run.detail + '</div></div></div>';
+  });
+  document.getElementById('runList').innerHTML = html;
+
+  document.querySelectorAll('.run-row').forEach(function(row) {
+    const id = parseInt(row.dataset.id, 10);
+    row.addEventListener('click', function() { toggle(id); });
+    row.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(id); }
+    });
+  });
+
+  updateProgress();
+  renderCountdown();
+}
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+  if (!confirm('Reset all ' + done.length + ' completed runs?')) return;
+  done = [];
+  render();
+  save();
+});
+
+render();
+</script>
+</body>
+</html>
