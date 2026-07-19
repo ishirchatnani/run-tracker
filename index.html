@@ -99,14 +99,6 @@
   }
   .banner strong { color: var(--ink); font-weight: 500; }
 
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0 14px; }
-  .legend-item {
-    display: flex; align-items: center; gap: 5px;
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
-  }
-  .legend-dot { width: 7px; height: 7px; border-radius: 2px; }
-
   .run-row {
     display: flex; gap: 12px;
     background: var(--card);
@@ -114,14 +106,11 @@
     border-radius: 10px;
     padding: 15px 14px;
     margin-bottom: 8px;
-    cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     transition: border-color 0.15s, opacity 0.15s;
   }
-  .run-row:active { border-color: var(--faint); }
-  @media (hover: hover) { .run-row:hover { border-color: var(--faint); } }
-  .run-row:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+  .run-row.next { border-color: var(--ink); }
 
   .run-row.done { opacity: 0.42; }
   .run-row.done .run-name { text-decoration: line-through; }
@@ -134,7 +123,13 @@
     flex-shrink: 0; margin-top: 1px;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.15s, border-color 0.15s;
+    cursor: pointer; position: relative;
   }
+  .checkbox[data-id]::before {           /* invisible 40px tap target, no layout impact */
+    content: ''; position: absolute; inset: -10px;
+  }
+  .checkbox:focus-visible { outline: 2px solid var(--long); outline-offset: 3px; }
+  @media (hover: hover) { .checkbox:hover { border-color: var(--muted); } }
   .run-row.done .checkbox { background: var(--ink); border-color: var(--ink); }
   .run-row.skipped .checkbox { background: var(--filler); border-color: var(--filler); }
   .mark { display: none; font-size: 11px; font-weight: 700; line-height: 1; }
@@ -152,6 +147,14 @@
   }
   .eyebrow .kind { font-weight: 500; }
   .eyebrow .total { color: var(--muted); }
+
+  .kind-wrap { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+  .next-badge {
+    font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    background: var(--ink); color: var(--paper);
+    padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+  }
 
   .skip-btn {
     font-family: 'DM Mono', monospace;
@@ -173,14 +176,56 @@
   }
   .breakdown .work { color: var(--ink); font-weight: 500; }
 
-  .reset {
-    display: block; width: 100%; margin-top: 22px;
-    background: none; border: 1px solid var(--rule);
-    color: var(--muted); font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.1em;
-    padding: 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase;
+  /* ── Collapsible sections ── */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; margin-bottom: 8px;
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
   }
-  .reset:active { color: var(--ink); border-color: var(--faint); }
+  .section-header:active { border-color: var(--faint); }
+  @media (hover: hover) { .section-header:hover { border-color: var(--faint); } }
+  .section-header:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+  .section-label strong { color: var(--ink); font-weight: 600; }
+  .chev { font-size: 15px; line-height: 1; transition: transform 0.2s; display: inline-block; }
+  .section-header.open .chev { transform: rotate(90deg); }
+  .section-body { margin-bottom: 8px; }
+
+  .up-next-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint);
+    margin: 4px 2px 8px;
+  }
+
+  .compact-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; margin-bottom: 4px;
+    background: var(--card); border: 1px solid var(--rule); border-radius: 8px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+    opacity: 0.62; transition: opacity 0.15s;
+  }
+  .compact-row:active { opacity: 0.85; }
+  @media (hover: hover) { .compact-row:hover { opacity: 0.85; } }
+  .compact-row:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; opacity: 0.85; }
+  .compact-pip { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+  .compact-name {
+    flex: 1; min-width: 0; font-size: 13px; font-weight: 500;
+    text-decoration: line-through;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .compact-total {
+    font-family: 'DM Mono', monospace; font-size: 10.5px;
+    color: var(--faint); flex-shrink: 0;
+  }
+  .compact-status {
+    font-family: 'DM Mono', monospace; font-size: 9.5px;
+    letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .compact-status.done { color: var(--easy); }
+  .compact-status.skip { color: var(--muted); }
+
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -200,14 +245,7 @@
   <div id="bannerSlot"></div>
 </header>
 
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--quality)"></div> Quality</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--easy)"></div> Easy</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--long)"></div> Long</div>
-</div>
-
 <div id="runList"></div>
-<button class="reset" id="resetBtn">Reset all</button>
 
 </div>
 
@@ -218,8 +256,8 @@
    the access your row-level security policy allows.
    Leave them as-is and the app runs local-only (no sync).
    ══════════════════════════════════════════════════════════════ */
-const SUPABASE_URL      = 'https://qexvmsweoxcqeymqljfi.supabase.co';   // https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = 'sb_publishable_U7fXJq7e346P3sMYnIMvGw_OPQRCEHZ';
+const SUPABASE_URL      = 'PASTE_YOUR_PROJECT_URL_HERE';   // https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
 const ROW_ID            = 'hm2026';
 /* ════════════════════════════════════════════════════════════ */
 
@@ -404,74 +442,136 @@ function renderCountdown() {
 function updateProgress() {
   const total = runs.length;
   const d = countBy('done'), s = countBy('skipped');
-  document.getElementById('progressBar').style.width = Math.round(d / total * 100) + '%';
+  const denom = total - s;                         // skipped runs leave the denominator
+  document.getElementById('progressBar').style.width = (denom > 0 ? Math.round(d / denom * 100) : 0) + '%';
   document.getElementById('progressText').textContent =
-    d + ' / ' + total + ' done' + (s ? '  ·  ' + s + ' skipped' : '');
+    d + ' / ' + denom + ' done' + (s ? '  ·  ' + s + ' skipped' : '');
 }
 
-function setState(id, next) {
-  if (state[id] === next) delete state[id]; else state[id] = next;
+const UPCOMING = 4;             // how many upcoming runs to show expanded
+let ui = { doneOpen: false, laterOpen: false };
+
+function commit() {
   updatedAt = Date.now();
-  const row = document.getElementById('run-' + id);
-  row.classList.toggle('done', state[id] === 'done');
-  row.classList.toggle('skipped', state[id] === 'skipped');
-  row.setAttribute('aria-checked', state[id] === 'done');
-  const btn = row.querySelector('.skip-btn');
-  if (btn) {
-    btn.textContent = state[id] === 'skipped' ? 'Skipped' : 'Skip';
-    btn.setAttribute('aria-pressed', state[id] === 'skipped');
-  }
-  updateProgress();
   saveLocal();
   queuePush();
+  render();
+}
+function setState(id, next) { if (state[id] === next) delete state[id]; else state[id] = next; commit(); }
+function clearState(id)     { if (state[id] !== undefined) delete state[id]; commit(); }
+
+function partition() {
+  const finished = [], incomplete = [];
+  runs.forEach(function(run, i) {
+    if (state[i] === 'done' || state[i] === 'skipped') finished.push(i);
+    else incomplete.push(i);
+  });
+  return { finished: finished, upNext: incomplete.slice(0, UPCOMING), later: incomplete.slice(UPCOMING) };
+}
+
+// Full card — used for upcoming and expanded "later" runs.
+// Only the checkbox toggles done; the card body is inert (no accidental completes).
+function cardHTML(i, isNext) {
+  const run = runs[i], st = state[i];
+  const cls = (st === 'done' ? ' done' : (st === 'skipped' ? ' skipped' : '')) + (isNext ? ' next' : '');
+  return '<div class="run-row' + cls + '" style="box-shadow: inset 3px 0 0 ' + typeColor[run.type] + '">'
+    + '<div class="checkbox" data-id="' + i + '" tabindex="0" role="checkbox" aria-checked="' + (st === 'done') + '" aria-label="Mark ' + run.name + ' complete">'
+    +   '<span class="mark tick">✓</span><span class="mark dash">–</span></div>'
+    + '<div class="run-body">'
+    +   '<div class="eyebrow">'
+    +     '<span class="kind-wrap">'
+    +       (isNext ? '<span class="next-badge">Next</span>' : '')
+    +       '<span class="kind" style="color:' + typeColor[run.type] + '">' + typeLabel[run.type] + '</span>'
+    +     '</span>'
+    +     '<span style="display:flex;align-items:center">'
+    +       '<span class="total">' + run.total + '</span>'
+    +       '<button class="skip-btn" data-skip="' + i + '" aria-pressed="' + (st === 'skipped') + '">'
+    +         (st === 'skipped' ? 'Skipped' : 'Skip') + '</button>'
+    +     '</span>'
+    +   '</div>'
+    +   '<div class="run-name">' + run.name + '</div>'
+    +   '<div class="breakdown">' + run.text.replace(/<b>/g, '<span class="work">').replace(/<\/b>/g, '</span>') + '</div>'
+    + '</div></div>';
+}
+
+// Compact one-liner — used inside the collapsed "done & skipped" section
+function compactHTML(i) {
+  const run = runs[i], st = state[i];
+  const statusTxt = st === 'skipped' ? 'Skipped' : 'Done';
+  const statusCls = st === 'skipped' ? 'skip' : 'done';
+  return '<div class="compact-row" data-clear="' + i + '" tabindex="0" role="button" aria-label="' + run.name + ', ' + statusTxt + ', tap to restore">'
+    + '<span class="compact-pip" style="background:' + typeColor[run.type] + '"></span>'
+    + '<span class="compact-name">' + run.name + '</span>'
+    + '<span class="compact-total">' + run.total + '</span>'
+    + '<span class="compact-status ' + statusCls + '">' + statusTxt + '</span>'
+    + '</div>';
+}
+
+function accordionHTML(key, label, open, bodyHTML) {
+  return '<div class="section-header' + (open ? ' open' : '') + '" data-acc="' + key + '" tabindex="0" role="button" aria-expanded="' + open + '">'
+    +   '<span class="section-label">' + label + '</span>'
+    +   '<span class="chev">›</span>'
+    + '</div>'
+    + (open ? '<div class="section-body">' + bodyHTML + '</div>' : '');
 }
 
 function render() {
+  const parts = partition();
   let html = '';
-  runs.forEach(function(run, i) {
-    const st = state[i];
-    const cls = st === 'done' ? ' done' : (st === 'skipped' ? ' skipped' : '');
-    html += '<div class="run-row' + cls + '" id="run-' + i + '" tabindex="0" role="checkbox" aria-checked="' + (st === 'done') + '" data-id="' + i + '">'
-      + '<div class="checkbox"><span class="mark tick">✓</span><span class="mark dash">–</span></div>'
-      + '<div class="run-body">'
-      +   '<div class="eyebrow">'
-      +     '<span class="kind" style="color:' + typeColor[run.type] + '">' + typeLabel[run.type] + '</span>'
-      +     '<span style="display:flex;align-items:center">'
-      +       '<span class="total">' + run.total + '</span>'
-      +       '<button class="skip-btn" data-skip="' + i + '" aria-pressed="' + (st === 'skipped') + '">'
-      +         (st === 'skipped' ? 'Skipped' : 'Skip') + '</button>'
-      +     '</span>'
-      +   '</div>'
-      +   '<div class="run-name">' + run.name + '</div>'
-      +   '<div class="breakdown">' + run.text.replace(/<b>/g, '<span class="work">').replace(/<\/b>/g, '</span>') + '</div>'
-      + '</div></div>';
-  });
+
+  // 1. Done & skipped — collapsed accordion
+  if (parts.finished.length) {
+    const d = parts.finished.filter(function(i) { return state[i] === 'done'; }).length;
+    const sk = parts.finished.filter(function(i) { return state[i] === 'skipped'; }).length;
+    const label = '<strong>' + d + '</strong> done' + (sk ? ' · <strong>' + sk + '</strong> skipped' : '');
+    html += accordionHTML('done', label, ui.doneOpen, parts.finished.map(compactHTML).join(''));
+  }
+
+  // 2. Upcoming — shown in full
+  html += '<div class="up-next-label">' + (parts.upNext.length ? 'Up next' : 'All runs handled') + '</div>';
+  html += parts.upNext.map(function(i, idx) { return cardHTML(i, idx === 0); }).join('');
+
+  // 3. Later — collapsed accordion
+  if (parts.later.length) {
+    html += accordionHTML('later', '<strong>' + parts.later.length + '</strong> later', ui.laterOpen, parts.later.map(function(i) { return cardHTML(i, false); }).join(''));
+  }
+
   document.getElementById('runList').innerHTML = html;
 
-  document.querySelectorAll('.run-row').forEach(function(row) {
-    const id = parseInt(row.dataset.id, 10);
-    row.addEventListener('click', function() { setState(id, 'done'); });
-    row.addEventListener('keydown', function(e) {
+  // Full cards: only the checkbox toggles done; skip button = skip
+  document.querySelectorAll('.checkbox[data-id]').forEach(function(cb) {
+    const id = parseInt(cb.dataset.id, 10);
+    cb.addEventListener('click', function(e) { e.stopPropagation(); setState(id, 'done'); });
+    cb.addEventListener('keydown', function(e) {
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setState(id, 'done'); }
     });
   });
-
   document.querySelectorAll('.skip-btn').forEach(function(btn) {
     const id = parseInt(btn.dataset.skip, 10);
     btn.addEventListener('click', function(e) { e.stopPropagation(); setState(id, 'skipped'); });
   });
 
+  // Compact rows: tap = restore to queue
+  document.querySelectorAll('.compact-row').forEach(function(row) {
+    const id = parseInt(row.dataset.clear, 10);
+    row.addEventListener('click', function() { clearState(id); });
+    row.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); clearState(id); }
+    });
+  });
+
+  // Accordion headers: toggle open/closed
+  document.querySelectorAll('.section-header').forEach(function(h) {
+    const key = h.dataset.acc === 'done' ? 'doneOpen' : 'laterOpen';
+    h.addEventListener('click', function() { ui[key] = !ui[key]; render(); });
+    h.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); ui[key] = !ui[key]; render(); }
+    });
+  });
+
   updateProgress();
   renderCountdown();
 }
-
-document.getElementById('resetBtn').addEventListener('click', function() {
-  const n = Object.keys(state).length;
-  if (!n) return;
-  if (!confirm('Reset all ' + n + ' marked runs?')) return;
-  state = {}; updatedAt = Date.now();
-  render(); saveLocal(); queuePush();
-});
 
 // ── Boot: local first (instant), then reconcile with remote ───
 loadLocal();
